@@ -1,0 +1,25 @@
+{
+  "name": "qr-code-generator",
+  "version": "1.0.0",
+  "description": "QR Code Generation Service — Video Game Industry Event",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist output"
+  },
+  "dependencies": {
+    "jimp": "^0.22.10",
+    "qrcode": "^1.5.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/qrcode": "^1.5.5",
+    "@types/uuid": "^9.0.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
