@@ -1,0 +1,387 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   RegistrationForm.module.css — Form Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Form Header ─────────────────────────────────────────────────────────── */
+
+.formTitle {
+  color: var(--colour-text-muted);
+  font-size: 9px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.formTitle::before {
+  content: '// ';
+  color: var(--colour-cyan);
+}
+
+/* ── Form Layout ─────────────────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Field ───────────────────────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  color: var(--colour-text-muted);
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.input {
+  background: #06090f;
+  border: 1px solid var(--colour-border);
+  color: var(--colour-text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 12px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  /* Remove browser default styling */
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0; /* Enforce sharp corners — no browser-default rounding */
+}
+
+.input::placeholder {
+  color: var(--colour-text-dim);
+}
+
+.input:focus {
+  border-color: var(--colour-cyan);
+  box-shadow: var(--glow-cyan), inset 0 0 0 1px rgba(0, 245, 255, 0.05);
+}
+
+.input.hasError {
+  border-color: var(--colour-pink);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fieldError {
+  color: var(--colour-pink);
+  font-size: 11px;
+  letter-spacing: 1px;
+  /* Animate in so the error doesn't feel jarring */
+  animation: slideIn 0.15s ease-out;
+}
+
+.fieldError::before {
+  content: '⚠ ';
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Checkbox ────────────────────────────────────────────────────────────── */
+
+.checkboxField {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/*
+  Custom checkbox: hide the native input but keep it accessible.
+  Screen readers see it; sighted users see our styled .checkboxBox.
+*/
+.checkboxInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.checkboxBox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--colour-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  margin-top: 1px; /* Optical alignment with the first line of text */
+}
+
+.checkboxInput:checked + .checkboxBox {
+  border-color: var(--colour-cyan);
+  background: rgba(0, 245, 255, 0.08);
+  box-shadow: var(--glow-cyan);
+}
+
+.checkboxInput:focus-visible + .checkboxBox {
+  outline: 2px solid var(--colour-cyan);
+  outline-offset: 3px;
+}
+
+.checkboxTick {
+  color: var(--colour-cyan);
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.checkboxInput:checked ~ .checkboxBox .checkboxTick {
+  opacity: 1;
+}
+
+/* This selector is tricky with the hidden input pattern — use JS toggle instead */
+.checkboxTick.visible {
+  opacity: 1;
+}
+
+.checkboxLabel {
+  color: var(--colour-text-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.checkboxLabel strong {
+  color: var(--colour-text);
+}
+
+/* ── Submit Button ───────────────────────────────────────────────────────── */
+
+.submitButton {
+  position: relative;
+  background: linear-gradient(90deg, var(--colour-purple), var(--colour-cyan));
+  border: none;
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  padding: 16px 24px;
+  width: 100%;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.1s;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.submitButton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+
+.submitButton:hover:not(:disabled)::after {
+  transform: translateX(100%);
+}
+
+.submitButton:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── Loading Dots ────────────────────────────────────────────────────────── */
+
+.loadingDots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  height: 14px;
+}
+
+.loadingDots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #000;
+  animation: dotBlink 1s ease-in-out infinite;
+}
+
+.loadingDots span:nth-child(2) { animation-delay: 0.15s; }
+.loadingDots span:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes dotBlink {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
+
+/* ── Error Banner ────────────────────────────────────────────────────────── */
+
+.errorBanner {
+  border-left: 3px solid var(--colour-pink);
+  background: rgba(255, 0, 128, 0.05);
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.errorBannerIcon {
+  color: var(--colour-pink);
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.errorBannerText {
+  color: #ff6699;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.retryLink {
+  background: none;
+  border: none;
+  color: var(--colour-cyan);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── Success Panel ───────────────────────────────────────────────────────── */
+
+.successPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+  padding: 8px 0;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.successIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--colour-cyan);
+  background: rgba(0, 245, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: var(--glow-cyan);
+}
+
+.successBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--colour-cyan);
+  color: var(--colour-cyan);
+  font-size: 9px;
+  letter-spacing: 5px;
+  padding: 5px 14px;
+  text-transform: uppercase;
+}
+
+.successTitle {
+  color: var(--colour-text);
+  font-size: 20px;
+  letter-spacing: 2px;
+}
+
+.successEmail {
+  color: var(--colour-cyan);
+  font-size: 14px;
+}
+
+.ticketIdBlock {
+  background: var(--colour-surface-alt);
+  border: 1px solid var(--colour-border);
+  padding: 16px 20px;
+  width: 100%;
+  text-align: left;
+}
+
+.ticketIdLabel {
+  color: var(--colour-text-muted);
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ticketIdValue {
+  color: var(--colour-cyan);
+  font-size: 11px;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+.successNote {
+  color: var(--colour-text-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 340px;
+}
+
+.mailtrapLink {
+  color: var(--colour-purple);
+  text-decoration: underline;
+}
+
+.newRegistrationBtn {
+  background: transparent;
+  border: 1px solid var(--colour-border);
+  color: var(--colour-text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  border-radius: 0;
+}
+
+.newRegistrationBtn:hover {
+  border-color: var(--colour-cyan);
+  color: var(--colour-cyan);
+}

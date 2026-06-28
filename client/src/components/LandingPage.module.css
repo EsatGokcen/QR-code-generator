@@ -1,0 +1,261 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LandingPage.module.css — Cyberpunk / Gaming Aesthetic
+   ═══════════════════════════════════════════════════════════════════════════
+
+   CSS Modules: class names are locally scoped — `.page` here becomes
+   something like `.LandingPage_page__x4kQz` in the browser, preventing
+   any clash with other stylesheets. Reference via `s.page` in the component.
+*/
+
+/* ── Page Container ──────────────────────────────────────────────────────── */
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  overflow: hidden;
+}
+
+/* ── Ambient Glow Orbs ───────────────────────────────────────────────────── */
+/*
+  These decorative pseudo-elements create the "volumetric light" feel of
+  cyberpunk UI. Large blurred radial gradients at low opacity give depth
+  to the flat dark background without adding markup.
+*/
+
+.page::before {
+  content: '';
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(157, 0, 255, 0.12) 0%, transparent 70%);
+  top: -200px;
+  left: -200px;
+  pointer-events: none;
+  animation: orbDrift 12s ease-in-out infinite alternate;
+}
+
+.page::after {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0, 245, 255, 0.08) 0%, transparent 70%);
+  bottom: -100px;
+  right: -100px;
+  pointer-events: none;
+  animation: orbDrift 15s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes orbDrift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(30px, 20px) scale(1.05); }
+}
+
+/* ── Content Column ──────────────────────────────────────────────────────── */
+
+.content {
+  position: relative; /* Sit above the ::before/::after orbs */
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+}
+
+/* ── Header Badge ────────────────────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--colour-purple);
+  color: var(--colour-purple);
+  font-size: 9px;
+  letter-spacing: 5px;
+  padding: 6px 16px;
+  text-transform: uppercase;
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--colour-purple);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── Hero Section ────────────────────────────────────────────────────────── */
+
+.hero {
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--colour-text-muted);
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.eyebrow::before {
+  content: '>> ';
+  color: var(--colour-cyan);
+}
+
+.headline {
+  font-size: clamp(36px, 8vw, 56px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  color: var(--colour-text);
+  margin-bottom: 20px;
+}
+
+/*
+  GLITCH TEXT EFFECT:
+  Three layers create the glitch illusion:
+  1. The real text (normal colour)
+  2. ::before — cyan layer, clipped and shifted left
+  3. ::after  — purple layer, clipped and shifted right
+  Animated clip-path slices create the characteristic horizontal "slice" glitch.
+  data-text="LOOT" must match the text content in JSX.
+*/
+.glitch {
+  position: relative;
+  color: var(--colour-cyan);
+  display: inline-block;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+}
+
+.glitch::before {
+  color: var(--colour-purple);
+  animation: glitchBefore 4s infinite;
+}
+
+.glitch::after {
+  color: var(--colour-cyan);
+  animation: glitchAfter 4s infinite;
+}
+
+@keyframes glitchBefore {
+  0%, 89%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  90%           { clip-path: inset(15% 0 60% 0); transform: translate(-3px, -1px); }
+  92%           { clip-path: inset(55% 0 25% 0); transform: translate(3px, 1px); }
+  94%           { clip-path: inset(75% 0 5%  0); transform: translate(-2px, 2px); }
+  96%           { clip-path: inset(40% 0 45% 0); transform: translate(2px, -1px); }
+}
+
+@keyframes glitchAfter {
+  0%, 91%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
+  92%           { clip-path: inset(30% 0 50% 0); transform: translate(3px, 1px); }
+  94%           { clip-path: inset(60% 0 20% 0); transform: translate(-3px, -2px); }
+  96%           { clip-path: inset(10% 0 70% 0); transform: translate(2px, 1px); }
+}
+
+.description {
+  color: var(--colour-text-muted);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.description strong {
+  color: var(--colour-text);
+  font-weight: 600;
+}
+
+/* ── Form Card ───────────────────────────────────────────────────────────── */
+
+.card {
+  position: relative;
+  width: 100%;
+  background: var(--colour-surface);
+  border: 1px solid var(--colour-border);
+  padding: 36px;
+}
+
+/*
+  CORNER DECORATIONS:
+  Four absolutely-positioned spans render L-shaped neon brackets in each corner.
+  This is the signature "HUD / UI frame" element of cyberpunk interfaces.
+  Using real elements (not pseudo-elements) gives us all four corners —
+  ::before and ::after would only give us two.
+*/
+.corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--colour-cyan);
+  border-style: solid;
+  opacity: 0.7;
+}
+.cornerTL { top: -1px;    left: -1px;    border-width: 2px 0 0 2px; }
+.cornerTR { top: -1px;    right: -1px;   border-width: 2px 2px 0 0; }
+.cornerBL { bottom: -1px; left: -1px;    border-width: 0 0 2px 2px; }
+.cornerBR { bottom: -1px; right: -1px;   border-width: 0 2px 2px 0; }
+
+/* Animated top border scan effect */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--colour-cyan), transparent);
+  animation: scanBorder 5s linear infinite;
+}
+
+@keyframes scanBorder {
+  from { left: -100%; }
+  to   { left: 200%; }
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+
+.footer {
+  text-align: center;
+}
+
+.footerText {
+  color: var(--colour-text-dim);
+  font-size: 10px;
+  letter-spacing: 2px;
+  line-height: 2;
+}
+
+.footerText::before {
+  content: '// ';
+  color: var(--colour-border);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .card { padding: 24px 20px; }
+  .headline { letter-spacing: -0.5px; }
+}

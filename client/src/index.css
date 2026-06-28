@@ -1,0 +1,106 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL STYLES & DESIGN TOKENS — Cyberpunk / Gaming Theme
+   ═══════════════════════════════════════════════════════════════════════════
+
+   CSS custom properties (variables) are the design tokens for this UI.
+   Changing a value here propagates instantly to every component that uses it.
+   This is the CSS equivalent of a design-system token file.
+*/
+
+:root {
+  /* ── Colour Palette ─────────────────────────────────────────────────── */
+  --colour-bg:          #060608;    /* Page background — near-black with a blue hint */
+  --colour-surface:     #0d0d1a;    /* Card / form backgrounds */
+  --colour-surface-alt: #060b14;    /* Slightly different surface for nested cards */
+  --colour-border:      #1a1a3e;    /* Subtle border */
+
+  --colour-cyan:        #00f5ff;    /* Primary accent — neon cyan */
+  --colour-purple:      #9d00ff;    /* Secondary accent — electric violet */
+  --colour-pink:        #ff0080;    /* Warning / danger accent */
+
+  --colour-text:        #e0e0ff;    /* Body text — off-white with a blue tint */
+  --colour-text-muted:  #6b6b8a;    /* Dimmed / secondary text */
+  --colour-text-dim:    #3a3a5c;    /* Very dim — footer level */
+
+  /* ── Glow Effects ───────────────────────────────────────────────────── */
+  --glow-cyan:   0 0 20px rgba(0, 245, 255, 0.35);
+  --glow-purple: 0 0 20px rgba(157, 0, 255, 0.35);
+
+  /* ── Spacing ────────────────────────────────────────────────────────── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+
+  /* ── Typography ─────────────────────────────────────────────────────── */
+  --font-mono: 'Courier New', Courier, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--colour-bg);
+  color: var(--colour-text);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+
+  /*
+    GRID BACKGROUND:
+    Two overlapping linear-gradients create a subtle grid.
+    The low opacity (0.03) keeps it as a barely-visible texture
+    rather than a harsh grid that would distract from the content.
+  */
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/*
+  SCANLINE OVERLAY:
+  A repeating gradient simulates the horizontal scanlines of a CRT monitor.
+  `pointer-events: none` ensures it doesn't block mouse interaction.
+  `position: fixed` makes it stay in place while the page scrolls.
+  `z-index: 9999` puts it on top of everything — the opacity is low enough
+  that it reads as a texture, not a cover.
+*/
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.07) 2px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Scrollbar (WebKit) ─────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--colour-bg); }
+::-webkit-scrollbar-thumb { background: var(--colour-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--colour-purple); }
+
+/* ── Focus Outline ──────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--colour-cyan);
+  outline-offset: 3px;
+}
