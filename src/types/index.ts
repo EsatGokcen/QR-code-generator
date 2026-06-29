@@ -73,11 +73,13 @@ export interface StandQrOptions extends BaseQrOptions {
 
 /**
  * Options for per-ticket QR codes.
- * Currently minimal — ticket QRs don't need branding options in this prototype,
- * but we keep a dedicated type so they can diverge independently later.
+ * Logo fields mirror StandQrOptions — ticket QRs now also receive the branded
+ * overlay so every scanned code on the day carries consistent event identity.
  */
 export interface TicketQrOptions extends BaseQrOptions {
   outputFilename?: string; // Output filename (default: 'ticket-{ticketId}')
+  logoPath?: string;       // Absolute filesystem path to logo (default: assets/logo.png)
+  logoSizeRatio?: number;  // Logo width as fraction of QR width (default: from config)
 }
 
 // ─── Service Return Types ─────────────────────────────────────────────────────

@@ -101,11 +101,8 @@ async function main(): Promise<void> {
   const standResult = await generateStandQr({
     darkColor: '#003791',  // Sega-inspired deep blue
     lightColor: '#ffffff', // White background for maximum scanner contrast
-
-    // To add a logo overlay (optional):
-    //   logoPath: path.resolve('./assets/logo.png'),
-    //   logoSizeRatio: 0.2,  // max safe size with error correction level H
-
+    // Logo overlay is applied automatically from assets/logo.png.
+    // Drop a real PNG there to replace the Sega placeholder that's used in the meantime.
     outputFilename: 'stand-marketing-qr',
   });
 

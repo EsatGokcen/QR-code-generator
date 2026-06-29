@@ -52,7 +52,12 @@ export interface TicketEmailData {
 export const TICKET_QR_CID = 'ticket-qr@gamesummit';
 
 export function buildTicketEmailHtml(data: TicketEmailData): string {
-  const displayName = data.attendeeName ?? data.attendeeEmail.split('@')[0];
+  // Capitalise the first character of whatever name we display.
+  // e.g. "esat_gokcen" → "Esat_gokcen", "playerone" → "Playerone"
+  // If attendeeName was provided at registration that is used directly (with
+  // the same capitalisation rule applied for consistency).
+  const rawName     = data.attendeeName ?? data.attendeeEmail.split('@')[0];
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -62,135 +67,204 @@ export function buildTicketEmailHtml(data: TicketEmailData): string {
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Your Ticket — ${data.eventName}</title>
   <style type="text/css">
-    /* Reset — normalise across email clients */
+    /*
+      EMAIL CSS RULES:
+      - No flexbox / grid   (Outlook ignores both)
+      - No CSS variables    (only inline or <style> block)
+      - No external fonts   (use web-safe font stacks only)
+      - No text-shadow      (stripped by many clients)
+      Tables remain the most reliable layout primitive across all clients.
+    */
+
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-    img { -ms-interpolation-mode: bicubic; border: 0; }
+    img { -ms-interpolation-mode: bicubic; border: 0; display: block; }
 
     body {
       margin: 0;
       padding: 0;
-      background-color: #060608;
-      font-family: 'Courier New', Courier, monospace;
+      background-color: #00091f;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
     }
-    .wrapper { width: 100%; background-color: #060608; padding: 32px 0; }
-    .container { max-width: 600px; margin: 0 auto; background-color: #0d0d1a; }
 
-    /* HEADER */
+    /* ── Page wrapper ── */
+    .wrapper   { width: 100%; background-color: #00091f; padding: 32px 0; }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #001040;
+      border-top: 4px solid #00a0e9;   /* Sega electric-blue top rail */
+    }
+
+    /* ── HEADER ── */
     .header {
-      background: linear-gradient(135deg, #0d0d1a 0%, #140026 100%);
-      padding: 40px 36px;
+      background-color: #001040;
+      border-bottom: 2px solid #0054a6;
+      padding: 40px 36px 32px;
       text-align: center;
-      border-bottom: 2px solid #00f5ff;
     }
     .header-badge {
       display: inline-block;
-      border: 1px solid #9d00ff;
-      color: #9d00ff;
-      font-size: 10px;
-      letter-spacing: 5px;
-      padding: 5px 14px;
-      margin-bottom: 18px;
+      background-color: #00a0e9;
+      color: #000000;
+      font-family: 'Arial Black', Impact, Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      padding: 6px 18px;
+      margin-bottom: 22px;
       text-transform: uppercase;
     }
     .header-title {
-      color: #00f5ff;
+      color: #ffffff;
+      font-family: 'Arial Black', Impact, Arial, sans-serif;
       font-size: 30px;
-      font-weight: bold;
-      margin: 0 0 6px 0;
-      letter-spacing: 3px;
-      text-shadow: 0 0 24px rgba(0, 245, 255, 0.45);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 0 0 8px 0;
     }
     .header-subtitle {
-      color: #6b6b8a;
-      font-size: 11px;
+      color: #a8cce8;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
       letter-spacing: 4px;
       text-transform: uppercase;
       margin: 0;
     }
 
-    /* BODY */
-    .body { padding: 36px 36px 24px; }
-    .greeting { color: #e0e0ff; font-size: 17px; margin: 0 0 10px 0; }
-    .greeting-name { color: #00f5ff; }
-    .intro { color: #8888aa; font-size: 13px; line-height: 1.75; margin: 0 0 28px 0; }
+    /* ── BODY ── */
+    .body    { padding: 36px 36px 24px; }
+    .greeting {
+      color: #ffffff;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+    }
+    .greeting-name { color: #00a0e9; }
+    .intro {
+      color: #a8cce8;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      margin: 0 0 32px 0;
+    }
 
-    /* TICKET CARD */
+    /* ── TICKET CARD ── */
     .ticket-card {
-      background: #06090f;
-      border: 1px solid #1a1a3e;
+      background-color: #000c33;
+      border: 2px solid #0054a6;
+      border-top: 4px solid #00a0e9;
       padding: 28px;
       margin-bottom: 28px;
     }
     .ticket-label {
-      color: #9d00ff;
-      font-size: 9px;
+      color: #00a0e9;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
       letter-spacing: 5px;
       text-transform: uppercase;
       margin: 0 0 22px 0;
     }
 
-    /* QR CODE — rendered from the CID inline attachment */
+    /* ── QR CODE ── */
     .qr-wrapper { text-align: center; padding: 16px 0; }
     .qr-wrapper img {
       display: block;
       margin: 0 auto;
       width: 200px;
       height: 200px;
-      border: 2px solid #00f5ff;
-      padding: 10px;
+      border: 3px solid #00a0e9;
+      padding: 12px;
       background: #ffffff;
-      box-shadow: 0 0 24px rgba(0, 245, 255, 0.25);
     }
     .qr-caption {
-      color: #6b6b8a;
-      font-size: 9px;
+      color: #507090;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 600;
       letter-spacing: 3px;
       text-align: center;
-      margin: 10px 0 0 0;
+      margin: 12px 0 0 0;
       text-transform: uppercase;
     }
 
-    /* TICKET DETAILS */
-    .divider { border: none; border-top: 1px solid #1a1a3e; margin: 22px 0; }
+    /* ── TICKET DETAILS ── */
+    .divider { border: none; border-top: 1px solid #0054a6; margin: 22px 0; }
     .detail-label {
-      color: #6b6b8a;
-      font-size: 9px;
+      color: #a8cce8;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
       letter-spacing: 3px;
       text-transform: uppercase;
       display: block;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
-    .detail-value { color: #e0e0ff; font-size: 13px; margin: 0 0 14px 0; }
-    .detail-value-mono { color: #00f5ff; font-family: 'Courier New', monospace; font-size: 11px; word-break: break-all; }
+    .detail-value {
+      color: #ffffff;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 16px 0;
+    }
+    .detail-value-mono {
+      color: #00a0e9;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
 
-    /* WARNING */
+    /* ── WARNING ── */
     .warning {
-      border-left: 3px solid #ff0080;
-      background: rgba(255, 0, 128, 0.04);
+      border-left: 4px solid #ff3333;
+      background-color: #1a0008;
       padding: 14px 18px;
       margin-bottom: 28px;
     }
-    .warning p { color: #ff6699; font-size: 12px; margin: 0; line-height: 1.65; }
+    .warning p {
+      color: #ff8888;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.65;
+    }
 
-    /* CTA */
+    /* ── CTA BUTTON ── */
     .cta-button {
       display: block;
-      background: linear-gradient(90deg, #7b00cc, #00d4e6);
+      background-color: #00a0e9;
       color: #000000;
       text-align: center;
-      padding: 15px;
+      padding: 16px;
       text-decoration: none;
-      font-size: 12px;
+      font-family: 'Arial Black', Impact, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 900;
       letter-spacing: 4px;
       text-transform: uppercase;
-      font-weight: bold;
       margin-bottom: 28px;
     }
 
-    /* FOOTER */
-    .footer { border-top: 1px solid #111130; padding: 22px 36px; text-align: center; }
-    .footer p { color: #2e2e4a; font-size: 10px; margin: 0 0 5px 0; line-height: 1.6; }
+    /* ── FOOTER ── */
+    .footer {
+      border-top: 2px solid #0054a6;
+      padding: 22px 36px;
+      text-align: center;
+      background-color: #00091f;
+    }
+    .footer p {
+      color: #507090;
+      font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      margin: 0 0 5px 0;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -199,7 +273,7 @@ export function buildTicketEmailHtml(data: TicketEmailData): string {
 
     <!-- ═══ HEADER ════════════════════════════════════════════════ -->
     <div class="header">
-      <p class="header-badge">Access Granted</p>
+      <div class="header-badge">&#9632; Access Granted</div>
       <h1 class="header-title">${data.eventName}</h1>
       <p class="header-subtitle">Digital Event Pass</p>
     </div>
@@ -218,14 +292,14 @@ export function buildTicketEmailHtml(data: TicketEmailData): string {
 
       <!-- ── TICKET CARD ───────────────────────────────────────── -->
       <div class="ticket-card">
-        <p class="ticket-label">// Your Entry Pass</p>
+        <p class="ticket-label">Your Entry Pass</p>
 
         <!--
-          THE QR CODE:
-          src="cid:${TICKET_QR_CID}" tells the email client to look for
-          an attachment whose Content-ID header matches "${TICKET_QR_CID}".
-          Nodemailer sets that header automatically when cid is specified
-          on the attachment object in emailService.ts.
+          CID image reference: the email client looks for an attachment
+          whose Content-ID matches "${TICKET_QR_CID}". Nodemailer wires
+          this automatically via the { cid } field in emailService.ts.
+          Works in Gmail, Outlook, Apple Mail, and mobile clients even
+          when "block external images" is enabled.
         -->
         <div class="qr-wrapper">
           <img
@@ -234,7 +308,7 @@ export function buildTicketEmailHtml(data: TicketEmailData): string {
             width="200"
             height="200"
           />
-          <p class="qr-caption">Scan at venue entry</p>
+          <p class="qr-caption">Scan at venue entry &middot; Single use</p>
         </div>
 
         <hr class="divider" />
@@ -254,8 +328,9 @@ export function buildTicketEmailHtml(data: TicketEmailData): string {
       <!-- ── SECURITY WARNING ──────────────────────────────────── -->
       <div class="warning">
         <p>
-          ⚠ Do not share this QR code. It is uniquely tied to your registration
-          and can only be scanned once. Duplicate scans are flagged as potential fraud.
+          &#9888; Do not share this QR code. It is uniquely tied to your
+          registration and can only be scanned once. Duplicate scans are
+          flagged as potential fraud.
         </p>
       </div>
 
@@ -282,7 +357,8 @@ export function buildTicketEmailHtml(data: TicketEmailData): string {
  * A clean text version ensures the attendee always gets their ticket ID.
  */
 export function buildTicketEmailText(data: TicketEmailData): string {
-  const displayName = data.attendeeName ?? data.attendeeEmail.split('@')[0];
+  const rawName     = data.attendeeName ?? data.attendeeEmail.split('@')[0];
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
   return [
     `${data.eventName} — Your Digital Event Pass`,

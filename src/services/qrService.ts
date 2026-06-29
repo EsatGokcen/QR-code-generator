@@ -27,6 +27,12 @@ import path from 'path';
 import { config, urls } from '../config';
 import { StandQrOptions, TicketQrOptions, QrGenerationResult } from '../types';
 
+// Default logo asset location — drop a PNG here to brand every QR code.
+// Both stand and ticket generators look here automatically.  If the file is
+// absent the server falls back to a generated Sega-themed placeholder and
+// logs a warning, so QR generation never throws during a live demo.
+const LOGO_PATH = path.resolve(__dirname, '../../assets/logo.png');
+
 // ─── Private Helpers ──────────────────────────────────────────────────────────
 // These functions are not exported — they are implementation details of this
 // module. Only the two public generators at the bottom are part of the API.
@@ -102,57 +108,137 @@ async function generateQrSvgString(
 }
 
 /**
- * Composites a logo image onto the exact centre of a QR code PNG.
+ * Generates a Sega-branded placeholder logo as a programmatic Jimp image.
+ * Called when no physical logo file exists at LOGO_PATH.
  *
- * The centre is the safest location because:
- * 1. It avoids the three corner "finder patterns" which scanners locate first
- * 2. Error correction (level H) is specifically designed to recover the centre
- * 3. It is the standard expected position for QR logos
+ * Output is a concentric-square mark:
+ *   ┌────────────────────────┐
+ *   │  Sega deep-blue outer  │
+ *   │  ┌──────────────────┐  │
+ *   │  │  White ring      │  │
+ *   │  │  ┌────────────┐  │  │
+ *   │  │  │ Blue core  │  │  │
+ *   │  │  └────────────┘  │  │
+ *   │  └──────────────────┘  │
+ *   └────────────────────────┘
  *
- * PROCESS:
- * 1. Load both images into memory as Jimp instances
- * 2. Resize the logo to `sizeRatio` × QR width (square crop)
- * 3. Calculate the pixel coordinates for dead centre
- * 4. Composite (overlay) the logo using standard alpha blending
- * 5. Return the combined image as a PNG Buffer
+ * The nested-square pattern reads as a deliberate mark even when composited
+ * at 200px, and is visually distinct from the QR module pattern around it.
  *
- * @param qrBuffer   - PNG bytes of the generated QR code
- * @param logoPath   - Filesystem path to the logo image (PNG, JPG, BMP, GIF, TIFF)
- * @param sizeRatio  - Logo width as a fraction of QR width (e.g. 0.2 = 20%)
+ * new Jimp(w, h, color) is synchronous in Jimp v0.22 — no I/O, just memory.
+ */
+function createPlaceholderLogo(size: number): Jimp {
+  const img  = new Jimp(size, size, 0x003791ff); // Sega deep blue (#003791), opaque
+  const ring = new Jimp(Math.floor(size * 0.72), Math.floor(size * 0.72), 0xffffffff);
+  const core = new Jimp(Math.floor(size * 0.46), Math.floor(size * 0.46), 0x003791ff);
+
+  img.composite(ring, Math.floor((size - ring.getWidth()) / 2), Math.floor((size - ring.getHeight()) / 2));
+  img.composite(core, Math.floor((size - core.getWidth()) / 2), Math.floor((size - core.getHeight()) / 2));
+
+  return img;
+}
+
+/**
+ * Loads a logo from disk.  If the file is absent or unreadable, emits a
+ * console warning and returns the generated placeholder instead.
+ * QR generation therefore never throws on a missing asset file.
+ *
+ * @param logoPath       - Absolute path to a PNG/JPG logo file
+ * @param placeholderSize - Pixel size passed to createPlaceholderLogo if needed
+ */
+async function loadLogoWithFallback(logoPath: string, placeholderSize: number): Promise<Jimp> {
+  try {
+    await fs.access(logoPath);
+    return await Jimp.read(logoPath);
+  } catch {
+    console.warn(
+      `[QrService] Logo not found at "${path.relative(process.cwd(), logoPath)}" ` +
+      `— using Sega placeholder. Add a PNG at assets/logo.png to replace it.`
+    );
+    return createPlaceholderLogo(placeholderSize);
+  }
+}
+
+/**
+ * Composites a pre-loaded Jimp logo onto the exact centre of a QR code PNG.
+ *
+ * ASPECT-RATIO SAFE SCALING:
+ * The logo is scaled to fit inside a square bounding box (logoSize × logoSize)
+ * while preserving its original width-to-height ratio. A wide logo like the
+ * Sega wordmark is fitted by width with height scaled proportionally — it is
+ * never stretched into a square.
+ *
+ * WHITE MATTE SQUARE:
+ * The scaled logo is centred onto a solid white square matte that exactly fills
+ * the bounding box. The matte is what gets composited onto the QR, not the logo
+ * directly. This has three benefits:
+ *   1. The white block cleanly occludes the underlying QR modules — no modules
+ *      "bleed through" a transparent or semi-transparent logo edge.
+ *   2. The logo never overflows the error-correction budget regardless of its
+ *      aspect ratio (the matte is always exactly logoSize × logoSize).
+ *   3. The white background provides maximum contrast for any dark-coloured logo.
+ *
+ * @param qrBuffer  - PNG bytes of the generated QR code
+ * @param logo      - Pre-loaded Jimp image (real asset or generated placeholder)
+ * @param sizeRatio - Bounding-box width as a fraction of QR width (e.g. 0.22)
  */
 async function compositeLogoOntoQr(
   qrBuffer: Buffer,
-  logoPath: string,
+  logo: Jimp,
   sizeRatio: number
 ): Promise<Buffer> {
-  // Load both images concurrently — no dependency between the two reads
-  const [qrImage, logoImage] = await Promise.all([
-    Jimp.read(qrBuffer),  // Jimp.read() accepts a Buffer directly
-    Jimp.read(logoPath),  // Also accepts a file path, URL, or Jimp instance
-  ]);
+  const qrImage  = await Jimp.read(qrBuffer);
+  const qrWidth  = qrImage.getWidth();
+  const qrHeight = qrImage.getHeight();
 
-  const qrWidth = qrImage.getWidth();
-  const logoSize = Math.floor(qrWidth * sizeRatio); // e.g. 1024 × 0.2 = 204px
+  // The square bounding box the logo must fit inside
+  const boxSize = Math.floor(qrWidth * sizeRatio);
 
-  // Resize the logo to a square of `logoSize × logoSize` pixels.
-  // Jimp.AUTO as the second argument would preserve aspect ratio — we use
-  // a fixed square here so the logo always fits neatly in the centre cell.
-  logoImage.resize(logoSize, logoSize);
+  // ── Aspect-ratio-preserving scale ──────────────────────────────────────────
+  // Read the logo's original pixel dimensions (no resize yet)
+  const srcW = logo.bitmap.width;
+  const srcH = logo.bitmap.height;
+  const aspectRatio = srcW / srcH;
 
-  // Calculate top-left pixel coordinates to centre the logo
-  const x = Math.floor((qrWidth - logoSize) / 2);
-  const y = Math.floor((qrImage.getHeight() - logoSize) / 2);
+  let scaledW: number;
+  let scaledH: number;
 
-  // BLEND_SOURCE_OVER is the standard "paint on top" alpha compositing mode.
-  // opacitySource: 1 = logo is fully opaque (no transparency)
-  // opacityDest: 1   = QR background is fully preserved where logo doesn't cover
-  qrImage.composite(logoImage, x, y, {
+  if (aspectRatio >= 1) {
+    // Wider than tall (or square): fit to box width, scale height down
+    scaledW = boxSize;
+    scaledH = Math.round(boxSize / aspectRatio);
+  } else {
+    // Taller than wide: fit to box height, scale width down
+    scaledH = boxSize;
+    scaledW = Math.round(boxSize * aspectRatio);
+  }
+
+  // resize() is in-place; caller always provides a fresh Jimp instance per call
+  logo.resize(scaledW, scaledH);
+
+  // ── White matte square ──────────────────────────────────────────────────────
+  // Centre the scaled logo on a white square that matches the full bounding box.
+  // This square is what lands on the QR — never the logo bitmap directly.
+  const matte  = new Jimp(boxSize, boxSize, 0xffffffff);
+  const matteX = Math.floor((boxSize - scaledW) / 2);
+  const matteY = Math.floor((boxSize - scaledH) / 2);
+
+  matte.composite(logo, matteX, matteY, {
     mode: Jimp.BLEND_SOURCE_OVER,
     opacitySource: 1,
     opacityDest: 1,
   });
 
-  // Encode the modified Jimp image back to a PNG Buffer for writing to disk
+  // ── Centre matte on QR ──────────────────────────────────────────────────────
+  const x = Math.floor((qrWidth  - boxSize) / 2);
+  const y = Math.floor((qrHeight - boxSize) / 2);
+
+  qrImage.composite(matte, x, y, {
+    mode: Jimp.BLEND_SOURCE_OVER,
+    opacitySource: 1,
+    opacityDest: 1,
+  });
+
   return qrImage.getBufferAsync(Jimp.MIME_PNG);
 }
 
@@ -210,22 +296,12 @@ export async function generateStandQr(
     generateQrSvgString(content, renderOpts),
   ]);
 
-  // Apply logo overlay if a path was provided
-  let finalPngBuffer = rawPngBuffer;
-  if (options.logoPath) {
-    // Validate the logo file is accessible before attempting to read it.
-    // `fs.access()` checks permissions without reading the file — cheaper than fs.stat().
-    // We throw a descriptive error rather than letting jimp throw a cryptic one.
-    try {
-      await fs.access(options.logoPath);
-    } catch {
-      throw new Error(
-        `Logo file not found or not readable: "${options.logoPath}".\n` +
-        `Provide an absolute path to a PNG or JPG file.`
-      );
-    }
-    finalPngBuffer = await compositeLogoOntoQr(rawPngBuffer, options.logoPath, logoSizeRatio);
-  }
+  // Logo overlay — always applied. Falls back to Sega placeholder if no file exists.
+  // Pass options.logoPath to override the default LOGO_PATH for a specific call.
+  const logoPath = options.logoPath ?? LOGO_PATH;
+  const placeholderSize = Math.floor(width * logoSizeRatio);
+  const logo = await loadLogoWithFallback(logoPath, placeholderSize);
+  const finalPngBuffer = await compositeLogoOntoQr(rawPngBuffer, logo, logoSizeRatio);
 
   // Write the final PNG to disk
   const filePath = path.join(config.output.dir, `${outputFilename}.png`);
@@ -279,15 +355,24 @@ export async function generateTicketQr(
   const renderOpts = { width, margin, darkColor, lightColor };
 
   // Generate both formats in parallel (same pattern as generateStandQr)
-  const [pngBuffer, svgString] = await Promise.all([
+  const [rawPngBuffer, svgString] = await Promise.all([
     generateQrPngBuffer(content, renderOpts),
     generateQrSvgString(content, renderOpts),
   ]);
 
-  const filePath = path.join(config.output.dir, `${outputFilename}.png`);
-  await fs.writeFile(filePath, pngBuffer);
+  // Logo overlay — always applied with graceful placeholder fallback,
+  // matching the same behaviour as generateStandQr so every QR code in
+  // the system carries consistent event branding out of the box.
+  const logoSizeRatio = options.logoSizeRatio ?? config.qr.logoSizeRatio;
+  const logoPath      = options.logoPath ?? LOGO_PATH;
+  const placeholderSize = Math.floor(width * logoSizeRatio);
+  const logo = await loadLogoWithFallback(logoPath, placeholderSize);
+  const finalPngBuffer = await compositeLogoOntoQr(rawPngBuffer, logo, logoSizeRatio);
 
-  const dataUrl = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+  const filePath = path.join(config.output.dir, `${outputFilename}.png`);
+  await fs.writeFile(filePath, finalPngBuffer);
+
+  const dataUrl = `data:image/png;base64,${finalPngBuffer.toString('base64')}`;
 
   return { filePath, dataUrl, svgString, content };
 }
