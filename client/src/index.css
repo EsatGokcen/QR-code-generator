@@ -1,30 +1,40 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   GLOBAL STYLES & DESIGN TOKENS — Cyberpunk / Gaming Theme
+   GLOBAL STYLES — Sega Arcade Theme
    ═══════════════════════════════════════════════════════════════════════════
 
-   CSS custom properties (variables) are the design tokens for this UI.
-   Changing a value here propagates instantly to every component that uses it.
-   This is the CSS equivalent of a design-system token file.
+   Design intent: bold, high-contrast, highly readable on projectors and
+   presentation screens. Deep midnight navy backgrounds, brilliant electric
+   blue accents, pure white text. Inspired by Sega Mega Drive / Sonic branding.
+
+   Variable names are kept identical to the previous build so that the
+   component-level .module.css files need no variable-name changes — only
+   the values here change, and CSS cascades those changes everywhere.
 */
 
 :root {
   /* ── Colour Palette ─────────────────────────────────────────────────── */
-  --colour-bg:          #060608;    /* Page background — near-black with a blue hint */
-  --colour-surface:     #0d0d1a;    /* Card / form backgrounds */
-  --colour-surface-alt: #060b14;    /* Slightly different surface for nested cards */
-  --colour-border:      #1a1a3e;    /* Subtle border */
 
-  --colour-cyan:        #00f5ff;    /* Primary accent — neon cyan */
-  --colour-purple:      #9d00ff;    /* Secondary accent — electric violet */
-  --colour-pink:        #ff0080;    /* Warning / danger accent */
+  /* Backgrounds — deep navy, like a Sega arcade cabinet shell */
+  --colour-bg:          #00091f;   /* Page background */
+  --colour-surface:     #001040;   /* Card / form background */
+  --colour-surface-alt: #000c33;   /* Inner card / detail background */
 
-  --colour-text:        #e0e0ff;    /* Body text — off-white with a blue tint */
-  --colour-text-muted:  #6b6b8a;    /* Dimmed / secondary text */
-  --colour-text-dim:    #3a3a5c;    /* Very dim — footer level */
+  /* Borders — vivid Sega blue, clearly visible on dark backgrounds */
+  --colour-border:      #0054a6;   /* Default border */
 
-  /* ── Glow Effects ───────────────────────────────────────────────────── */
-  --glow-cyan:   0 0 20px rgba(0, 245, 255, 0.35);
-  --glow-purple: 0 0 20px rgba(157, 0, 255, 0.35);
+  /* Accent colours — Sega's electric blue palette */
+  --colour-cyan:        #00a0e9;   /* Primary highlight — "Sonic blue" */
+  --colour-purple:      #0070c0;   /* Secondary highlight — deeper electric blue */
+  --colour-pink:        #ff3333;   /* Error / warning — vivid red (high contrast) */
+
+  /* Text — maximum contrast for presentation readability */
+  --colour-text:        #ffffff;   /* Pure white — body copy, headlines */
+  --colour-text-muted:  #a8cce8;   /* Light blue-white — secondary information */
+  --colour-text-dim:    #507090;   /* Muted but still visible — footer level */
+
+  /* Glow effects — blue shadow matching the Sega accent */
+  --glow-cyan:   0 0 18px rgba(0, 160, 233, 0.45);
+  --glow-purple: 0 0 18px rgba(0, 112, 192, 0.40);
 
   /* ── Spacing ────────────────────────────────────────────────────────── */
   --space-xs: 4px;
@@ -34,8 +44,14 @@
   --space-xl: 40px;
 
   /* ── Typography ─────────────────────────────────────────────────────── */
-  --font-mono: 'Courier New', Courier, monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Display font: bold, geometric — close to Sega's heavy signage style */
+  --font-display: 'Arial Black', 'Impact', Arial, sans-serif;
+  /* Body font: clean system sans-serif for labels and descriptions */
+  --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Monospace: only for code / ticket IDs */
+  --font-mono:    'Courier New', Courier, monospace;
+  /* Legacy alias — some module files reference --font-sans */
+  --font-sans:    var(--font-body);
 }
 
 /* ── Reset ──────────────────────────────────────────────────────────────── */
@@ -54,53 +70,33 @@ html {
 body {
   background-color: var(--colour-bg);
   color: var(--colour-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   /*
-    GRID BACKGROUND:
-    Two overlapping linear-gradients create a subtle grid.
-    The low opacity (0.03) keeps it as a barely-visible texture
-    rather than a harsh grid that would distract from the content.
+    Sega arcade cabinet horizon-line effect:
+    Very subtle horizontal rules suggest the horizontal scan-line of a
+    classic arcade monitor, at a scale that reads as texture not distraction.
+    Opacity is kept very low (0.035) so it never competes with content.
   */
   background-image:
-    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
-  background-size: 44px 44px;
+    linear-gradient(
+      rgba(0, 100, 200, 0.035) 1px,
+      transparent 1px
+    );
+  background-size: 100% 48px;
 }
 
-/*
-  SCANLINE OVERLAY:
-  A repeating gradient simulates the horizontal scanlines of a CRT monitor.
-  `pointer-events: none` ensures it doesn't block mouse interaction.
-  `position: fixed` makes it stay in place while the page scrolls.
-  `z-index: 9999` puts it on top of everything — the opacity is low enough
-  that it reads as a texture, not a cover.
-*/
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.07) 2px,
-    rgba(0, 0, 0, 0.07) 4px
-  );
-  pointer-events: none;
-  z-index: 9999;
-}
+/* ── Scrollbar (WebKit browsers) ────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; }
+::-webkit-scrollbar-track  { background: var(--colour-bg); }
+::-webkit-scrollbar-thumb  { background: var(--colour-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--colour-cyan); }
 
-/* ── Scrollbar (WebKit) ─────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--colour-bg); }
-::-webkit-scrollbar-thumb { background: var(--colour-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--colour-purple); }
-
-/* ── Focus Outline ──────────────────────────────────────────────────────── */
+/* ── Global focus ring ──────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--colour-cyan);
+  outline: 3px solid var(--colour-cyan);
   outline-offset: 3px;
 }

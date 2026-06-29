@@ -1,25 +1,31 @@
 /**
- * src/index.ts — Composition Root & Demo Runner
+ * src/index.ts — QR Generation Demo Runner
  *
- * This file serves two purposes:
+ * Demonstrates the full QR system end-to-end:
+ *   A) Stand QR — encodes MARKETING_URL (set this to your tunnel URL in .env)
+ *   B) Ticket QR generation for two attendees
+ *   C) Ticket verification scenarios (valid / duplicate / fake / empty)
  *
- * 1. COMPOSITION ROOT
- *    The single place in the application where concrete implementations are
- *    bound to their interfaces and the dependency graph is assembled.
- *    Only this file knows which repository implementation is in use.
- *    All other modules depend on abstractions (interfaces), not concretions.
+ * ── TUNNEL WORKFLOW ────────────────────────────────────────────────────────
+ * 1. Start your tunnel (Pinggy / ngrok) pointing at localhost:5173
+ * 2. Copy the public URL (e.g. https://yourdemo.pinggy.link)
+ * 3. Set MARKETING_URL=https://yourdemo.pinggy.link in .env
+ * 4. Run `npm run dev` — the stand QR now encodes the tunnel URL
+ * 5. A phone scanning the QR hits the tunnel → forwards to your local
+ *    React frontend running on port 5173. No deployment needed.
+ * ──────────────────────────────────────────────────────────────────────────
  *
- * 2. DEMO RUNNER
- *    Exercises all three core scenarios in sequence to verify the system works:
- *      A) Stand QR generation (marketing / event stands)
- *      B) Ticket creation + QR generation (per-attendee)
- *      C) Ticket verification (happy path, duplicate scan, and not-found)
- *
- * Run this file with:
- *   npm run dev              → via ts-node (no build step)
- *   npm run build && npm start → compile then run
+ * Run with:
+ *   npm run dev              → ts-node (no build step)
+ *   npm run build && npm start → compiled JS
  */
 
+// dotenv MUST be the very first import so that process.env is populated
+// before any config module (src/config/index.ts, src/config/demoConfig.ts)
+// evaluates its top-level `const config = {...}` statements.
+import 'dotenv/config';
+
+import fs from 'fs';
 import { InMemoryTicketRepository } from './repositories/ticketRepository';
 import { TicketService } from './services/ticketService';
 import { generateStandQr } from './services/qrService';
@@ -62,25 +68,43 @@ function subHeader(title: string): void {
 // ─── Main Demo ────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  console.log('\n🎮  Video Game Event — QR Code Service Demo');
-  console.log(`    Output directory: ${config.output.dir}`);
-  console.log(`    Marketing URL:    ${config.marketingUrl}`);
-  console.log(`    API base URL:     ${config.api.baseUrl}`);
+  console.log('\n🎮  Game Summit 2026 — QR Code Generation Demo');
+  console.log(`    Output directory : ${config.output.dir}`);
+  console.log(`    Marketing URL    : ${config.marketingUrl}`);
+  console.log(`    API base URL     : ${config.api.baseUrl}`);
+
+  // ── Ensure the output directory exists before any generation ──────────────
+  // fs.mkdirSync with { recursive: true } is safe to call even if the
+  // directory already exists — it is idempotent and never throws in that case.
+  // Using the sync version here means the directory is guaranteed to exist
+  // before the first async QR generation call begins.
+  fs.mkdirSync(config.output.dir, { recursive: true });
+  console.log(`    Output dir ready : ✓\n`);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // DEMO 1 — Stand QR Code (Marketing)
+  // DEMO 1 — Stand QR Code
+  //
+  // This is the QR code you print and display on the event stand.
+  // It encodes MARKETING_URL — set that in .env to your tunnel URL so that
+  // phones scanning it during the event hit your local React frontend.
+  //
+  // Example .env:
+  //   MARKETING_URL=https://yourdemo.pinggy.link
+  //
+  // The tunnel forwards the public HTTPS request to localhost:5173 where
+  // Vite is serving the registration landing page.
   // ═══════════════════════════════════════════════════════════════════════════
-  header('DEMO 1 — Stand QR Code (Marketing / Event Stands)');
-  console.log('  Generating a large-format, branded QR for event stands...\n');
+  header('DEMO 1 — Stand QR Code (Encodes MARKETING_URL)');
+  console.log(`  Target URL: ${config.marketingUrl}`);
+  console.log('  Generating 1024×1024 PNG...\n');
 
   const standResult = await generateStandQr({
-    // Custom brand colours for the event
-    darkColor: '#1a1a2e',  // Deep navy — visible on light backgrounds
-    lightColor: '#e8f4fd', // Light blue tint — keeps the QR readable
+    darkColor: '#003791',  // Sega-inspired deep blue
+    lightColor: '#ffffff', // White background for maximum scanner contrast
 
-    // To add a logo, uncomment and set a path to a real image file:
-    // logoPath: path.resolve('./assets/logo.png'),
-    // logoSizeRatio: 0.2, // 20% of QR width — safe limit for error correction level H
+    // To add a logo overlay (optional):
+    //   logoPath: path.resolve('./assets/logo.png'),
+    //   logoSizeRatio: 0.2,  // max safe size with error correction level H
 
     outputFilename: 'stand-marketing-qr',
   });

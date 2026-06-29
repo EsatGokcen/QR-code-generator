@@ -10,7 +10,7 @@
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist output",
-    "dev:all": "concurrently --names API,UI --prefix-colors cyan,magenta \"npm run server\" \"npm run --prefix client dev\""
+    "dev:all": "concurrently --kill-others --names API,UI --prefix-colors cyan,magenta \"npm run server\" \"npm run --prefix client dev\""
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -35,18 +35,22 @@ export function useRegistration() {
     setState({ status: 'loading' });
 
     try {
+      // Relative URL — resolves correctly whether the page is loaded from
+      // localhost:5173 in development or a Pinggy/ngrok tunnel on mobile.
+      // Never use an absolute http://localhost:3001 URL here: that resolves
+      // to the laptop's loopback on desktop but fails entirely on a phone.
+      // Vite proxies /api/* → http://localhost:3001 on the server side.
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
-      // Always parse the JSON regardless of HTTP status code.
-      // Our API always returns structured JSON, even for errors.
+      // Always parse the JSON body regardless of HTTP status.
+      // Our API returns structured JSON even for 4xx/5xx responses.
       const result: RegistrationResponse = await response.json() as RegistrationResponse;
 
       if (!response.ok || !result.success) {
-        // Type narrowing: TypeScript knows result is RegistrationErrorResponse here
         setState({
           status: 'error',
           message: result.message ?? 'Registration failed. Please try again.',
@@ -54,7 +58,6 @@ export function useRegistration() {
         return;
       }
 
-      // Type narrowing: TypeScript knows result is RegistrationSuccessResponse here
       setState({
         status: 'success',
         ticketId: result.ticketId,
@@ -64,13 +67,19 @@ export function useRegistration() {
       });
 
     } catch (err: unknown) {
-      // Network error (server down, no internet, etc.)
-      const message =
-        err instanceof Error
-          ? `Network error: ${err.message}`
-          : 'Could not reach the server. Is the API running on port 3001?';
+      // Covers genuine network failures: tunnel disconnected, server down,
+      // SSL errors, and WebKit DOMExceptions from failed host-verification
+      // responses that Safari can't parse as JSON.
+      // We intentionally do NOT surface err.message directly — on mobile
+      // WebKit it reads as "The string did not match the expected pattern."
+      // which is a Safari-internal DOMException, not a user-actionable message.
+      const detail = err instanceof Error ? err.message : String(err);
+      console.error('[Registration] Fetch failed:', detail);
 
-      setState({ status: 'error', message });
+      setState({
+        status: 'error',
+        message: 'Could not reach the server. Check your connection and try again.',
+      });
     }
   }, []);
 

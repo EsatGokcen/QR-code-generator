@@ -96,7 +96,7 @@ export default function RegistrationForm() {
         <p className={s.successNote}>
           {state.emailMode === 'demo' ? (
             <>
-              Running in <strong style={{ color: 'var(--colour-cyan)' }}>demo mode</strong>.
+              Running in <strong className={s.mailtrapLink} style={{ textDecoration: 'none' }}>demo mode</strong>.
               Your email is in the{' '}
               <a
                 href={state.mailtrapUrl}

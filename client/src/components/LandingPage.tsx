@@ -32,11 +32,10 @@ export default function LandingPage() {
             Claim Your<br />
             Event{' '}
             {/*
-              data-text must match the text content exactly.
-              The CSS ::before and ::after pseudo-elements use attr(data-text)
-              to duplicate the text for the glitch layers.
+              .highlight applies the Sega electric-blue accent colour and a
+              subtle glow — no animation. The contrast alone draws the eye.
             */}
-            <span className={s.glitch} data-text="LOOT">LOOT</span>
+            <span className={s.highlight}>LOOT</span>
           </h1>
 
           <p className={s.description}>

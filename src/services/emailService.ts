@@ -64,6 +64,26 @@ function createDemoTransporter(): Transporter {
       user: smtp.user,
       pass: smtp.pass,
     },
+
+    // ── SMTP Timeouts ──────────────────────────────────────────────────────
+    // Without these, a dead or slow SMTP server causes the sendMail() promise
+    // to hang indefinitely, blocking the Express response forever.
+    //
+    // connectionTimeout: time (ms) to establish the initial TCP connection.
+    //   If sandbox.smtp.mailtrap.io is unreachable, this fires in 10s.
+    //
+    // greetingTimeout: time (ms) to receive the SMTP server's opening banner
+    //   ("220 mailtrap.io ESMTP ..."). If the server connects but stalls, this fires.
+    //
+    // socketTimeout:   time (ms) of inactivity on an already-open socket
+    //   during the DATA phase. Guards against a server that accepts the message
+    //   but never acknowledges it.
+    //
+    // All three ensure errors are surfaced as promise rejections (caught by our
+    // try/catch) rather than as uncaughtException from abandoned socket events.
+    connectionTimeout: 10_000,
+    greetingTimeout:    8_000,
+    socketTimeout:     15_000,
   });
 }
 
@@ -99,6 +119,9 @@ function createProductionTransporter(): Transporter {
       user: 'api',
       pass: token,
     },
+    connectionTimeout: 10_000,
+    greetingTimeout:    8_000,
+    socketTimeout:     15_000,
   });
 }
 

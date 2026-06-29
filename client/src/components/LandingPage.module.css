@@ -1,10 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   LandingPage.module.css — Cyberpunk / Gaming Aesthetic
+   LandingPage.module.css — Sega Arcade Theme
    ═══════════════════════════════════════════════════════════════════════════
 
-   CSS Modules: class names are locally scoped — `.page` here becomes
-   something like `.LandingPage_page__x4kQz` in the browser, preventing
-   any clash with other stylesheets. Reference via `s.page` in the component.
+   Design intent:
+   - Deep navy backgrounds with electric-blue Sega accents
+   - All text is pure white at large sizes — readable from 3m on a projector
+   - No glitch animations (those belong to cyberpunk, not Sega)
+   - Bold, clean geometry: thick borders, sharp corners, strong contrast
+   - The "arcade marquee" badge and Sega-style thick-border card are the
+     primary visual identity elements
 */
 
 /* ── Page Container ──────────────────────────────────────────────────────── */
@@ -20,80 +24,69 @@
   overflow: hidden;
 }
 
-/* ── Ambient Glow Orbs ───────────────────────────────────────────────────── */
 /*
-  These decorative pseudo-elements create the "volumetric light" feel of
-  cyberpunk UI. Large blurred radial gradients at low opacity give depth
-  to the flat dark background without adding markup.
+  Sega "blue sky" gradient — the page subtly lightens toward the centre,
+  giving a sense of depth without distracting from the content.
+  Uses absolute positioning so it sits behind all content.
 */
-
 .page::before {
   content: '';
   position: absolute;
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(157, 0, 255, 0.12) 0%, transparent 70%);
-  top: -200px;
-  left: -200px;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 40%,
+    rgba(0, 60, 140, 0.25) 0%,
+    transparent 70%
+  );
   pointer-events: none;
-  animation: orbDrift 12s ease-in-out infinite alternate;
-}
-
-.page::after {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(0, 245, 255, 0.08) 0%, transparent 70%);
-  bottom: -100px;
-  right: -100px;
-  pointer-events: none;
-  animation: orbDrift 15s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes orbDrift {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(30px, 20px) scale(1.05); }
 }
 
 /* ── Content Column ──────────────────────────────────────────────────────── */
 
 .content {
-  position: relative; /* Sit above the ::before/::after orbs */
+  position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 36px;
+  gap: 32px;
 }
 
-/* ── Header Badge ────────────────────────────────────────────────────────── */
+/* ── Arcade Marquee Badge ────────────────────────────────────────────────── */
+/*
+  Sega arcade machines had marquee banners at the top with bold, bright
+  lettering on a coloured background. This badge mirrors that energy —
+  solid Sega blue background, pure white uppercase text, strong presence.
+*/
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid var(--colour-purple);
-  color: var(--colour-purple);
-  font-size: 9px;
-  letter-spacing: 5px;
-  padding: 6px 16px;
+  gap: 10px;
+  background: var(--colour-cyan);
+  color: #000000;            /* Black on electric blue — maximum contrast */
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  padding: 8px 22px;
   text-transform: uppercase;
 }
 
 .badgeDot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--colour-purple);
-  animation: pulse 2s ease-in-out infinite;
+  background: #000;
+  animation: pulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.4; transform: scale(0.7); }
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
 }
 
 /* ── Hero Section ────────────────────────────────────────────────────────── */
@@ -104,136 +97,94 @@
 
 .eyebrow {
   color: var(--colour-text-muted);
-  font-size: 10px;
-  letter-spacing: 5px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
-.eyebrow::before {
-  content: '>> ';
-  color: var(--colour-cyan);
-}
-
+/*
+  Sega Mega Drive startup screen energy: huge, white, bold.
+  clamp() scales gracefully from phones to projectors.
+  font-family uses the display stack so it renders with the maximum
+  visual weight available on the user's system.
+*/
 .headline {
-  font-size: clamp(36px, 8vw, 56px);
+  font-family: var(--font-display);
+  font-size: clamp(44px, 9vw, 68px);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: -1px;
   color: var(--colour-text);
-  margin-bottom: 20px;
+  text-transform: uppercase;
+  margin-bottom: 22px;
 }
 
 /*
-  GLITCH TEXT EFFECT:
-  Three layers create the glitch illusion:
-  1. The real text (normal colour)
-  2. ::before — cyan layer, clipped and shifted left
-  3. ::after  — purple layer, clipped and shifted right
-  Animated clip-path slices create the characteristic horizontal "slice" glitch.
-  data-text="LOOT" must match the text content in JSX.
+  The accent word — vivid Sega electric blue on white background.
+  No animation: pure contrast does the visual work. Sega's design
+  philosophy favoured clarity over decoration.
 */
-.glitch {
-  position: relative;
+.highlight {
   color: var(--colour-cyan);
   display: inline-block;
+  text-shadow: var(--glow-cyan);
 }
 
-.glitch::before,
-.glitch::after {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  font-size: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
-}
-
-.glitch::before {
-  color: var(--colour-purple);
-  animation: glitchBefore 4s infinite;
-}
-
-.glitch::after {
-  color: var(--colour-cyan);
-  animation: glitchAfter 4s infinite;
-}
-
-@keyframes glitchBefore {
-  0%, 89%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
-  90%           { clip-path: inset(15% 0 60% 0); transform: translate(-3px, -1px); }
-  92%           { clip-path: inset(55% 0 25% 0); transform: translate(3px, 1px); }
-  94%           { clip-path: inset(75% 0 5%  0); transform: translate(-2px, 2px); }
-  96%           { clip-path: inset(40% 0 45% 0); transform: translate(2px, -1px); }
-}
-
-@keyframes glitchAfter {
-  0%, 91%, 100% { clip-path: inset(0 0 100% 0); transform: translate(0); }
-  92%           { clip-path: inset(30% 0 50% 0); transform: translate(3px, 1px); }
-  94%           { clip-path: inset(60% 0 20% 0); transform: translate(-3px, -2px); }
-  96%           { clip-path: inset(10% 0 70% 0); transform: translate(2px, 1px); }
-}
-
+/*
+  Description at 18px — large enough to read on a presentation screen
+  without needing to squint. White text, generous line-height.
+*/
 .description {
-  color: var(--colour-text-muted);
-  font-family: var(--font-sans);
-  font-size: 15px;
+  font-family: var(--font-body);
+  font-size: 18px;
   line-height: 1.75;
-  max-width: 400px;
+  color: var(--colour-text);
+  max-width: 440px;
   margin: 0 auto;
 }
 
 .description strong {
-  color: var(--colour-text);
-  font-weight: 600;
+  color: var(--colour-cyan);
+  font-weight: 700;
 }
 
-/* ── Form Card ───────────────────────────────────────────────────────────── */
+/* ── Registration Card ───────────────────────────────────────────────────── */
+/*
+  A Sega-style "HUD panel": thick electric-blue border on deep navy.
+  The border-top is heavier (4px) to anchor the panel visually, matching
+  the thick top rails of classic arcade control panels.
+*/
 
 .card {
   position: relative;
   width: 100%;
   background: var(--colour-surface);
-  border: 1px solid var(--colour-border);
-  padding: 36px;
+  border: 2px solid var(--colour-border);
+  border-top: 4px solid var(--colour-cyan);
+  padding: 40px 36px;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 160, 233, 0.08);
 }
 
 /*
-  CORNER DECORATIONS:
-  Four absolutely-positioned spans render L-shaped neon brackets in each corner.
-  This is the signature "HUD / UI frame" element of cyberpunk interfaces.
-  Using real elements (not pseudo-elements) gives us all four corners —
-  ::before and ::after would only give us two.
+  Corner accent brackets — the "HUD corner" marker used in classic Sega
+  game UI (e.g. Phantasy Star, Shining Force HUD frames).
+  Four separate elements give all four corners.
 */
 .corner {
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-color: var(--colour-cyan);
   border-style: solid;
-  opacity: 0.7;
+  opacity: 0.9;
 }
-.cornerTL { top: -1px;    left: -1px;    border-width: 2px 0 0 2px; }
-.cornerTR { top: -1px;    right: -1px;   border-width: 2px 2px 0 0; }
-.cornerBL { bottom: -1px; left: -1px;    border-width: 0 0 2px 2px; }
-.cornerBR { bottom: -1px; right: -1px;   border-width: 0 2px 2px 0; }
-
-/* Animated top border scan effect */
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--colour-cyan), transparent);
-  animation: scanBorder 5s linear infinite;
-}
-
-@keyframes scanBorder {
-  from { left: -100%; }
-  to   { left: 200%; }
-}
+.cornerTL { top: -2px;    left: -2px;    border-width: 3px 0 0 3px; }
+.cornerTR { top: -2px;    right: -2px;   border-width: 3px 3px 0 0; }
+.cornerBL { bottom: -2px; left: -2px;    border-width: 0 0 3px 3px; }
+.cornerBR { bottom: -2px; right: -2px;   border-width: 0 3px 3px 0; }
 
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 
@@ -241,21 +192,21 @@
   text-align: center;
 }
 
+/*
+  Footer text is dim but still readable — 13px, light blue-grey.
+  On a projector, this stays visible without competing with the form.
+*/
 .footerText {
   color: var(--colour-text-dim);
-  font-size: 10px;
-  letter-spacing: 2px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 1px;
   line-height: 2;
-}
-
-.footerText::before {
-  content: '// ';
-  color: var(--colour-border);
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 480px) {
-  .card { padding: 24px 20px; }
-  .headline { letter-spacing: -0.5px; }
+  .card        { padding: 28px 20px; }
+  .description { font-size: 16px; }
 }

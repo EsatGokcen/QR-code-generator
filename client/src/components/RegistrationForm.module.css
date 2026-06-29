@@ -1,20 +1,34 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   RegistrationForm.module.css — Form Styles
-   ═══════════════════════════════════════════════════════════════════════════ */
+   RegistrationForm.module.css — Sega Arcade Theme
+   High-contrast, presentation-screen-ready form styles.
+   ═══════════════════════════════════════════════════════════════════════════
 
-/* ── Form Header ─────────────────────────────────────────────────────────── */
+   Font size targets:
+   - Form section title : 14px uppercase
+   - Field labels       : 14px uppercase, bold
+   - Input text         : 18px
+   - Placeholder        : 18px, dimmed
+   - Field error        : 15px, bold, vivid red
+   - Checkbox label     : 17px
+   - Error banner text  : 15px
+   - Submit button      : 17px uppercase, bold
+   - Success text       : 16–20px
+
+   These sizes ensure every element is readable from 2–3m on a projector.
+*/
+
+/* ── Section Title ───────────────────────────────────────────────────────── */
 
 .formTitle {
   color: var(--colour-text-muted);
-  font-size: 9px;
-  letter-spacing: 5px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  margin-bottom: 24px;
-}
-
-.formTitle::before {
-  content: '// ';
-  color: var(--colour-cyan);
+  margin-bottom: 28px;
+  border-left: 3px solid var(--colour-cyan);
+  padding-left: 12px;
 }
 
 /* ── Form Layout ─────────────────────────────────────────────────────────── */
@@ -22,68 +36,89 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-/* ── Field ───────────────────────────────────────────────────────────────── */
+/* ── Field Wrapper ───────────────────────────────────────────────────────── */
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
+/*
+  Labels are 14px uppercase bold with a wide letter-spacing.
+  Pure white (#fff via --colour-text) — maximum contrast on navy.
+  At 14px uppercase these read clearly on a projector without feeling crowded.
+*/
 .label {
-  color: var(--colour-text-muted);
-  font-size: 9px;
-  letter-spacing: 4px;
+  color: var(--colour-text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
   text-transform: uppercase;
 }
 
+/*
+  Input at 18px with a 2px white border. The white border is the single
+  most important readability decision — on a dark navy background, white
+  borders are unmistakable and require zero visual parsing effort.
+*/
 .input {
-  background: #06090f;
-  border: 1px solid var(--colour-border);
+  background: var(--colour-surface-alt);
+  border: 2px solid rgba(255, 255, 255, 0.35);  /* Visible but not harsh */
   color: var(--colour-text);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  padding: 14px 16px;
   width: 100%;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  /* Remove browser default styling */
+  transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
   appearance: none;
-  border-radius: 0; /* Enforce sharp corners — no browser-default rounding */
+  border-radius: 0;
 }
 
 .input::placeholder {
   color: var(--colour-text-dim);
+  font-size: 18px;
 }
 
 .input:focus {
   border-color: var(--colour-cyan);
-  box-shadow: var(--glow-cyan), inset 0 0 0 1px rgba(0, 245, 255, 0.05);
+  box-shadow: var(--glow-cyan), inset 0 0 0 1px rgba(0, 160, 233, 0.08);
 }
 
 .input.hasError {
   border-color: var(--colour-pink);
+  box-shadow: 0 0 12px rgba(255, 51, 51, 0.3);
 }
 
 .input:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
+/*
+  Field error at 15px bold vivid red.
+  The ::before arrow calls attention without an icon dependency.
+  Bold weight ensures it reads at a glance during a live demo.
+*/
 .fieldError {
   color: var(--colour-pink);
-  font-size: 11px;
-  letter-spacing: 1px;
-  /* Animate in so the error doesn't feel jarring */
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   animation: slideIn 0.15s ease-out;
 }
 
 .fieldError::before {
-  content: '⚠ ';
+  content: '▲  ';
+  font-size: 10px;
+  vertical-align: middle;
 }
 
 @keyframes slideIn {
@@ -93,18 +128,24 @@
 
 /* ── Checkbox ────────────────────────────────────────────────────────────── */
 
+/*
+  The checkbox row uses a real accessible pattern:
+  - The native <input> is visually hidden but receives focus and keyboard events
+  - Screen readers see it correctly
+  - Sighted users see the large, styled .checkboxBox below
+  - The tick is 20px — visible from across a room
+*/
+
 .checkboxField {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   user-select: none;
+  padding: 4px 0;
 }
 
-/*
-  Custom checkbox: hide the native input but keep it accessible.
-  Screen readers see it; sighted users see our styled .checkboxBox.
-*/
+/* Visually hidden but still in the accessibility tree */
 .checkboxInput {
   position: absolute;
   width: 1px;
@@ -117,100 +158,102 @@
   border: 0;
 }
 
+/*
+  24px square checkbox — large enough to see on a projector.
+  White 2px border when unchecked: clear and legible on navy.
+*/
 .checkboxBox {
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--colour-border);
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  margin-top: 1px; /* Optical alignment with the first line of text */
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  margin-top: 1px;
 }
 
 .checkboxInput:checked + .checkboxBox {
   border-color: var(--colour-cyan);
-  background: rgba(0, 245, 255, 0.08);
+  background: rgba(0, 160, 233, 0.15);
   box-shadow: var(--glow-cyan);
 }
 
 .checkboxInput:focus-visible + .checkboxBox {
-  outline: 2px solid var(--colour-cyan);
+  outline: 3px solid var(--colour-cyan);
   outline-offset: 3px;
 }
 
+/* 20px vivid-blue tick mark — unmistakable on any screen size */
 .checkboxTick {
   color: var(--colour-cyan);
-  font-size: 12px;
+  font-size: 16px;
+  font-weight: 900;
   line-height: 1;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.12s;
 }
 
-.checkboxInput:checked ~ .checkboxBox .checkboxTick {
-  opacity: 1;
-}
-
-/* This selector is tricky with the hidden input pattern — use JS toggle instead */
 .checkboxTick.visible {
   opacity: 1;
 }
 
+/*
+  Checkbox label at 17px — the single largest body-text element in the form.
+  Must be readable by someone glancing at the screen, not leaning in.
+  The opt-in choice needs to be unambiguous at demo distances.
+*/
 .checkboxLabel {
-  color: var(--colour-text-muted);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  line-height: 1.5;
+  color: var(--colour-text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.55;
 }
 
 .checkboxLabel strong {
-  color: var(--colour-text);
+  color: var(--colour-cyan);
+  font-weight: 700;
 }
 
 /* ── Submit Button ───────────────────────────────────────────────────────── */
 
+/*
+  Solid Sega blue — no gradient. Sega's design uses flat, saturated primary
+  colours on dark backgrounds. The button is wide and tall enough to be
+  comfortable on touch screens and visible from the back of a room.
+*/
 .submitButton {
   position: relative;
-  background: linear-gradient(90deg, var(--colour-purple), var(--colour-cyan));
+  background: var(--colour-cyan);
   border: none;
-  color: #000;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 4px;
+  color: #000000;              /* Black on electric blue — maximum contrast */
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  padding: 16px 24px;
+  padding: 18px 28px;
   width: 100%;
   cursor: pointer;
-  transition: filter 0.2s, transform 0.1s;
   border-radius: 0;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.08s;
   overflow: hidden;
 }
 
-.submitButton::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%);
-  transform: translateX(-100%);
-  transition: transform 0.4s;
-}
-
-.submitButton:hover:not(:disabled)::after {
-  transform: translateX(100%);
-}
-
 .submitButton:hover:not(:disabled) {
-  filter: brightness(1.15);
+  background: #00b8ff;         /* Slightly lighter Sega blue on hover */
+  box-shadow: var(--glow-cyan);
 }
 
 .submitButton:active:not(:disabled) {
-  transform: scale(0.99);
+  transform: scale(0.985);
+  background: var(--colour-purple);
+  color: #ffffff;
 }
 
 .submitButton:disabled {
-  opacity: 0.7;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
@@ -218,48 +261,56 @@
 
 .loadingDots {
   display: inline-flex;
-  gap: 4px;
+  gap: 5px;
   align-items: center;
-  height: 14px;
+  height: 17px;
+  margin-left: 6px;
+  vertical-align: middle;
 }
 
 .loadingDots span {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #000;
   animation: dotBlink 1s ease-in-out infinite;
 }
 
-.loadingDots span:nth-child(2) { animation-delay: 0.15s; }
-.loadingDots span:nth-child(3) { animation-delay: 0.30s; }
+.loadingDots span:nth-child(2) { animation-delay: 0.17s; }
+.loadingDots span:nth-child(3) { animation-delay: 0.34s; }
 
 @keyframes dotBlink {
-  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  0%, 100% { opacity: 0.2; transform: scale(0.7); }
   50%       { opacity: 1;   transform: scale(1.2); }
 }
 
 /* ── Error Banner ────────────────────────────────────────────────────────── */
 
+/*
+  High-contrast error banner — vivid red left-border on a red-tinted background.
+  Text at 15px bold is legible across the room.
+*/
 .errorBanner {
-  border-left: 3px solid var(--colour-pink);
-  background: rgba(255, 0, 128, 0.05);
-  padding: 12px 16px;
+  border-left: 4px solid var(--colour-pink);
+  background: rgba(255, 51, 51, 0.08);
+  padding: 14px 18px;
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
 }
 
 .errorBannerIcon {
   color: var(--colour-pink);
-  font-size: 13px;
+  font-size: 16px;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .errorBannerText {
-  color: #ff6699;
-  font-size: 12px;
+  color: #ff8888;              /* Lighter red — readable on navy without clashing */
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
   line-height: 1.6;
 }
 
@@ -267,14 +318,19 @@
   background: none;
   border: none;
   color: var(--colour-cyan);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   text-decoration: underline;
   padding: 0;
-  margin-top: 4px;
+  margin-top: 6px;
   display: block;
+}
+
+.retryLink:hover {
+  color: #ffffff;
 }
 
 /* ── Success Panel ───────────────────────────────────────────────────────── */
@@ -284,100 +340,122 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 20px;
+  gap: 22px;
   padding: 8px 0;
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.35s ease-out;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Large vivid-green checkmark — unmistakable success signal */
 .successIcon {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  border: 2px solid var(--colour-cyan);
-  background: rgba(0, 245, 255, 0.06);
+  border: 3px solid #00cc66;
+  background: rgba(0, 204, 102, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  box-shadow: var(--glow-cyan);
+  font-size: 32px;
+  color: #00cc66;
+  box-shadow: 0 0 24px rgba(0, 204, 102, 0.35);
 }
 
 .successBadge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid var(--colour-cyan);
-  color: var(--colour-cyan);
-  font-size: 9px;
-  letter-spacing: 5px;
-  padding: 5px 14px;
+  gap: 10px;
+  background: #00cc66;
+  color: #000000;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  padding: 7px 18px;
   text-transform: uppercase;
 }
 
 .successTitle {
   color: var(--colour-text);
-  font-size: 20px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
   letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 .successEmail {
   color: var(--colour-cyan);
-  font-size: 14px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .ticketIdBlock {
   background: var(--colour-surface-alt);
-  border: 1px solid var(--colour-border);
-  padding: 16px 20px;
+  border: 2px solid var(--colour-border);
+  padding: 18px 22px;
   width: 100%;
   text-align: left;
 }
 
 .ticketIdLabel {
   color: var(--colour-text-muted);
-  font-size: 9px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 4px;
   text-transform: uppercase;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .ticketIdValue {
   color: var(--colour-cyan);
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   word-break: break-all;
   line-height: 1.6;
 }
 
+/*
+  Success note at 16px — the message explaining demo mode or production mode.
+  Attendees (and demo observers) need to be able to read this without effort.
+*/
 .successNote {
-  color: var(--colour-text-muted);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  line-height: 1.6;
-  max-width: 340px;
+  color: var(--colour-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 380px;
 }
 
 .mailtrapLink {
-  color: var(--colour-purple);
+  color: var(--colour-cyan);
+  font-weight: 700;
   text-decoration: underline;
+}
+
+.mailtrapLink:hover {
+  color: #ffffff;
 }
 
 .newRegistrationBtn {
   background: transparent;
-  border: 1px solid var(--colour-border);
+  border: 2px solid rgba(255, 255, 255, 0.25);
   color: var(--colour-text-muted);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 3px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  padding: 10px 20px;
+  padding: 12px 24px;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.15s, color 0.15s;
   border-radius: 0;
 }
 
